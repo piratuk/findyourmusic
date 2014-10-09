@@ -62,3 +62,7 @@ textarea {
     .artistsList li:hover {
         cursor: pointer;
     }
+
+    .thumbnail .progress {
+        height: 30px;
+    }
