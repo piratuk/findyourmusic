@@ -19,6 +19,9 @@ $("#artistInput").keypress(function (e) {
     }
 });
 $("#searchButton").click(function () {
+
+    var row = $(".searchResults").children(".row");
+    row.empty();
     var query = "/Home/GetSimilarArtists?";
     for (var i = 0; i < $(".artistsList").children().length; i++) {
         query += "artistName=" + $($(".artistsList").children()[i]).text() + "&";
@@ -26,7 +29,6 @@ $("#searchButton").click(function () {
     $.getJSON(query, function (data) {
         var results = data;
 
-        var row = $(".searchResults").children(".row");
         for (var i = 0; i < results.length; i++) {
             var artist = results[i];
             var at = $("<div></div>", {
