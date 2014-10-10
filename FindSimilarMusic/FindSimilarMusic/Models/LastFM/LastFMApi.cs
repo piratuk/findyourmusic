@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Web.Helpers;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
+using WebGrease.Css.Extensions;
 
 namespace FindSimilarMusic.Models.LastFM
 {
@@ -16,6 +17,7 @@ namespace FindSimilarMusic.Models.LastFM
         {
             var webClient = new WebClient();
             var response = webClient.DownloadString(_apiRoot + string.Format(_getSimilar, inArtist.Name));
+
             dynamic result = JsonConvert.DeserializeObject(response);
             if (result["error"] != null)
             {
@@ -27,12 +29,12 @@ namespace FindSimilarMusic.Models.LastFM
             {
                 var newArt = new Artist { Name = artist.name, Url = artist.url, PercentageSimilarity = artist.match, ImageUrl = artist.image[4]["#text"] };
                 newArt.PercentageSimilarity *= 100;
-                //SO SLOW
-                //dynamic desc =
-                //    JsonConvert.DeserializeObject(
-                //        webClient.DownloadString(_apiRoot + string.Format(_getInfo, inArtist.Name)));
-                //newArt.Description = desc.artist.bio.summary;
+
+                //var descResponse = webClient.DownloadString(_apiRoot + string.Format(_getInfo, artist.Name));
+                //dynamic descObj = JsonConvert.DeserializeObject(descResponse);
+                //newArt.Description = descObj.artist.bio.summary;
                 artists.Add(newArt);
+
             }
             return artists.ToArray();
         }
@@ -49,7 +51,32 @@ namespace FindSimilarMusic.Models.LastFM
             {
                 result.AddRange(artList);
             }
+            foreach (var inputSimilarArtist in inputSimilarArtists)
+            {
+                result.Intersect(inputSimilarArtist.Value, new ArtistsComparer());
+            }
+            foreach (var artistName in artistNames)
+            {
+                result.Remove(result.Find(artist => artist.Name.ToLower() == artistName.Name.ToLower()));
+            }
+            foreach (var artist in result)
+            {
+                
+            }
             return result.ToArray();
+        }
+
+        private class ArtistsComparer : IEqualityComparer<Artist>
+        {
+            public bool Equals(Artist x, Artist y)
+            {
+                return x.Name == y.Name || x.Url == y.Url;
+            }
+
+            public int GetHashCode(Artist obj)
+            {
+                return obj.GetHashCode();
+            }
         }
     }
 }
